@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>agents yaproom</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="a chatboard but all messages are not saved"
+    />
+    <meta name="keywords" content="chatboard, agentn86, agents gams" />
+    <meta name="author" content="agentn86" />
+    <link
+      rel="icon"
+      href="https://cdn.glitch.global/d7ca64b9-401f-403a-bf38-6a2d5013aacd/favicon.ico?v=1728659659214"
+    />
+    <style>
+      @font-face {
+        font-family: code;
+        src: url("https://cdn.glitch.global/d7ca64b9-401f-403a-bf38-6a2d5013aacd/font.ttf?v=1728607702992");
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        padding-bottom: 3rem;
+        font-family: code;
+        background-color: black;
+        color: green;
+      }
+
+      #form {
+        background: rgba(0, 0, 0, 0.15);
+        padding: 0.25rem;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        height: 3rem;
+        box-sizing: border-box;
+        backdrop-filter: blur(10px);
+      }
+      #input {
+        background-color: #2e2e2e;
+        color: white;
+        font: code;
+        border: none;
+        padding: 0 1rem;
+        flex-grow: 1;
+        border-radius: 2rem;
+        margin: 0.25rem;
+      }
+      #input:focus {
+        outline: none;
+      }
+      #username {
+        background-color: #2e2e2e;
+        color: white;
+        font: code;
+        border: none;
+        padding: 0 1rem;
+        flex-grow: 1;
+        border-radius: 2rem;
+        margin: 0.25rem;
+      }
+      #username:focus {
+        outline: none;
+      }
+      button {
+        background: #333;
+        border: none;
+        padding: 0 1rem;
+        margin: 0.25rem;
+        border-radius: 3px;
+        outline: none;
+        color: #fff;
+        display: flex; /* Add this */
+        align-items: center; /* Add this */
+        justify-content: center;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #393939;
+      }
+      button:disabled {
+        background: #393939;
+        color: gray;
+        cursor: not-allowed;
+      }
+      #messages {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+      }
+      #messages > li {
+        padding: 0.5rem 1rem;
+      }
+      #messages > li:nth-child(odd) {
+        background: #171717;
+      }
+
+      .fade-in {
+        opacity: 0;
+        transition: opacity 0.1s ease-in;
+      }
+
+      .fade-in.show {
+        opacity: 1;
+      }
+
+      .fade-out {
+        color: red;
+        opacity: 1;
+        transition: opacity 0.2s ease-out;
+      }
+
+      .fade-out.hide {
+        opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Audios -->
+    <audio id="join">
+      <source
+        type="audio/mp3"
+        src="https://cdn.glitch.global/d7ca64b9-401f-403a-bf38-6a2d5013aacd/join.mp3?v=1728569326383"
+      />
+    </audio>
+    <audio id="leave">
+      <source
+        type="audio/mp3"
+        src="https://cdn.glitch.global/d7ca64b9-401f-403a-bf38-6a2d5013aacd/leave.mp3?v=1728569559616"
+      />
+    </audio>
+    <audio id="send">
+      <source
+        type="audio/mp3"
+        src="https://cdn.glitch.global/d7ca64b9-401f-403a-bf38-6a2d5013aacd/send.mp3?v=1728656996543"
+      />
+    </audio>
+    <audio id="announceSfx">
+      <source
+        type="audio/mp3"
+        src="https://cdn.glitch.global/d7ca64b9-401f-403a-bf38-6a2d5013aacd/announce.mp3?v=1729184067978"
+      />
+    </audio>
+    <div
+      style="
+        background-color: white;
+        color: black;
+        position: fixed;
+        width: 100%;
+        display: none;
+      "
+      id="announce"
+    >
+      <br />
+      <center>
+        <span id="announce_member">agentn86 sayz: </span
+        ><span id="announce_message">TESTING</span>
+      </center>
+      <br />
+    </div>
+    <ul id="messages">
+      <li style="color: white">
+        <b>SYSTEM: </b><span id="systemMessageTip"></span>
+      </li>
+      <li style="color: white">
+        <b>Online Members: </b><span id="onlineMembers"></span>
+      </li>
+    </ul>
+    <a name="top"></a>
+    <form id="form" action="">
+      <input
+        id="username"
+        autocomplete="off"
+        placeholder="Enter your username here..."
+      />
+      <input
+        id="input"
+        autocomplete="off"
+        placeholder="Enter your message here..."
+      />
+      <button style="cursor: pointer" id="image" type="button">
+        <img
+          src="https://cdn.glitch.global/d7ca64b9-401f-403a-bf38-6a2d5013aacd/upload.png?v=1728590356101"
+          width="20"
+          height="20"
+        />
+      </button>
+      <button style="cursor: pointer" id="panel" type="button">Panel</button>
+      <script>
+        document.getElementById("panel").onclick = function () {
+          document.getElementById("panelDialog").showModal();
+        };
+      </script>
+      <button style="cursor: pointer">Send</button>
+    </form>
+    <div
+      id="popup"
+      style="
+        display: none;
+        position: fixed;
+        bottom: 3rem;
+        left: 0;
+        right: 0;
+        background: #454545;
+        border: 1px solid #ccc;
+        padding: 1rem;
+        z-index: 1000;
+        color: white;
+      "
+    >
+      <p>Upload an image!</p>
+      <input type="file" id="imageInput" accept="image/*" />
+    </div>
+    <dialog
+      id="panelDialog"
+      style="
+        background: rgba(255, 255, 255, 0.1);
+        padding: 0.25rem;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        box-sizing: border-box;
+        backdrop-filter: blur(6px);
+        border: 4px white solid;
+        width: auto;
+        height: auto;
+        color: white;
+      "
+    >
+      <center>
+        <h1>Panel</h1>
+        <p>
+          Otherwise, you can
+          <a
+            onclick="document.getElementById('panelDialog').close()"
+            style="
+              cursor: pointer;
+              text-decoration: underline;
+              font-weight: bold;
+            "
+            >close the panel</a
+          >
+          or look at the
+          <a
+            style="
+              cursor: pointer;
+              text-decoration: underline;
+              font-weight: bold;
+              color: white;
+            "
+            href="https://docs.google.com/spreadsheets/d/1fAPBH7yng1ptAb4saKZHKVZtDbKzMsq8MMVqRNO_srg/edit?usp=sharing"
+            target="_blank"
+            >admin role information sheet</a
+          >.
+        </p>
+        Admin Password: <input id="password" type="password" /> <br /><br />
+        <h2>Admin Commands</h2>
+        <p>
+          <i>
+            <span style="color: red"
+              >You need to click on the "Refresh Commands" to get your commands
+              correctly.</span
+            >
+          </i>
+        </p>
+        <button
+          onclick="refreshcommands()"
+          style="height: 30px"
+          id="refreshCMD"
+        >
+          Refresh Commands
+        </button>
+        <button onclick="debugMode()" style="height: 30px; cursor: pointer">
+          Debug Mode
+        </button>
+        <table>
+          <center>
+            <tr>
+              <th style="padding: 8px">
+                <button
+                  disabled
+                  style="width: 70px; height: 50px"
+                  onclick="deleteMessage()"
+                  id="command_deletemsg"
+                >
+                  Delete Message
+                </button>
+              </th>
+              <th style="padding: 8px">
+                <button
+                  disabled
+                  style="width: 70px; height: 50px"
+                  onclick="forceRefresh()"
+                  id="command_forcerefresh"
+                >
+                  Refresh Everyone
+                </button>
+              </th>
+              <th style="padding: 8px">
+                <button
+                  disabled
+                  style="width: 70px; height: 50px"
+                  onclick="announce()"
+                  id="command_announce"
+                >
+                  Announce Message
+                </button>
+              </th>
+              <th style="padding: 8px">
+                <button
+                  disabled
+                  style="width: 70px; height: 50px"
+                  onclick="lockchat()"
+                  id="command_lockchat"
+                >
+                  Toggle Lock
+                </button>
+              </th>
+            </tr>
+            <tr>
+              <th style="padding: 8px">
+                <button
+                  disabled
+                  style="width: 70px; height: 50px"
+                  onclick="jumpscare()"
+                  id="command_jumpscare"
+                >
+                  EVIL JUAN
+                </button>
+              </th>
+              <th style="padding: 8px">
+                <button
+                  disabled
+                  style="width: 70px; height: 50px"
+                  onclick="distinguishToggle()"
+                  id="command_distinguish"
+                >
+                  Distinguish Self
+                </button>
+              </th>
+            </tr>
+          </center>
+        </table>
+      </center>
+    </dialog>
+    <a name="j"></a>
+    <img
+      src="https://cdn.glitch.global/d7ca64b9-401f-403a-bf38-6a2d5013aacd/eviljuan.png?v=1729887239126"
+      style="position: absolute; display: none; width: 100%; height: 100%"
+      id="jumpscare"
+    />
+    <audio id="jumpaudio">
+      <source
+        src="https://cdn.glitch.global/d7ca64b9-401f-403a-bf38-6a2d5013aacd/jump.mp3?v=1729887344168"
+        type="audio/mp3"
+      />
+    </audio>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="client.js"></script>
+  </body>
+</html>
