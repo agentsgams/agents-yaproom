@@ -55,6 +55,14 @@ function jumpscare() {
   socket.emit("admincommand", ["jumpscare", password.value])
 }
 
+function jumpscareNice() {
+  socket.emit("admincommand", ["jumpscareNice", password.value])
+}
+
+function universeReset() {
+  socket.emit("admincommand", ["universeReset", password.value])
+}
+
 function distinguishToggle() {
   if (distinguish) {
     distinguish = false;
@@ -65,10 +73,22 @@ function distinguishToggle() {
   }
 }
 
+function toggleConnectMsg() {
+  socket.emit('admincommand', ["toggleConnectMSG", password.value, username.value])
+}
+
+function developmentSend() {
+  socket.emit('admincommand', ["lockanddevelop", password.value])
+}
+
 form.addEventListener("submit", function (e) {
   e.preventDefault();
   if (username.value == "") {
     alert("You need to put a username first to chat.");
+    return;
+  }
+  if (username.value.length >= 15) {
+    alert("Your username is too long.")
     return;
   }
 
@@ -81,11 +101,6 @@ form.addEventListener("submit", function (e) {
   }
 
   var msgData = [username.value, message, password.value, "", "", 0, distinguish];
-
-  if (message.length > 500) {
-    alert("Your mesasge is too big.");
-    return;
-  }
 
   if (file) {
     var reader = new FileReader();
@@ -109,6 +124,7 @@ socket.on("chat message", function (msg) {
 
   var item = document.createElement("li");
   item.id = "msg_"+msg[5];
+  item.classList.add('message')
   item.classList.add("fade-in");
 
   // Create a span for the username
@@ -235,6 +251,8 @@ socket.on("returnCommands", function (role) {
   var lockChat = document.getElementById("command_lockchat");
   var jumpscare = document.getElementById('command_jumpscare');
   var distinguish = document.getElementById('command_distinguish');
+  var toggleConnectMsg = document.getElementById('command_toggleConnectMsg');
+  var developmentMode = document.getElementById('command_devMode');
 
   switch (role) {
     case "owner":
@@ -244,6 +262,18 @@ socket.on("returnCommands", function (role) {
       lockChat.disabled = false;
       jumpscare.disabled = false;
       distinguish.disabled = false;
+      toggleConnectMsg.disabled = false;
+      developmentMode.disabled = false;
+      break;
+    case "coowner":
+      deleteMessage.disabled = false;
+      forceRefresh.disabled = true;
+      announce.disabled = false;
+      lockChat.disabled = false;
+      jumpscare.disabled = false;
+      distinguish.disabled = false;
+      toggleConnectMsg.disabled = false;
+      developmentMode.disabled = true;
       break;
     case "admin":
       deleteMessage.disabled = false;
@@ -252,14 +282,18 @@ socket.on("returnCommands", function (role) {
       lockChat.disabled = false;
       jumpscare.disabled = true;
       distinguish.disabled = true;
+      toggleConnectMsg.disabled = false;
+      developmentMode.disabled = true;
       break;
     case "mod":
       deleteMessage.disabled = false;
       forceRefresh.disabled = true;
       announce.disabled = false;
-      lockChat.disabled = true;
+      lockChat.disabled = false;
       jumpscare.disabled = true;
       distinguish.disabled = true;
+      toggleConnectMsg.disabled = true;
+      developmentMode.disabled = true;
       break;
     case "trialMod":
       deleteMessage.disabled = false;
@@ -268,6 +302,8 @@ socket.on("returnCommands", function (role) {
       lockChat.disabled = true;
       jumpscare.disabled = true;
       distinguish.disabled = true;
+      toggleConnectMsg.disabled = true;
+      developmentMode.disabled = true;
       break;
     case "regular":
       deleteMessage.disabled = true;
@@ -276,6 +312,8 @@ socket.on("returnCommands", function (role) {
       lockChat.disabled = true;
       jumpscare.disabled = true;
       distinguish.disabled = true;
+      toggleConnectMsg.disabled = true;
+      developmentMode.disabled = true;
       break;
   }
 });
@@ -284,11 +322,58 @@ socket.on("missingPerm", function (role) {
   alert(`You do not reach the required permission to use this command- you need to have the "${role}" role to do that.`)
 })
 
+socket.on("changeUsernameagent", function() {
+  alert("You don't have the required permission to have this username. Refresh, and change it.")
+})
+
 socket.on("jumpscare", function() {
+  document.getElementById('jumpscare').src = "https://cdn.glitch.global/d7ca64b9-401f-403a-bf38-6a2d5013aacd/eviljuan.png?v=1729887239126"
   document.getElementById('jumpscare').style.display = "block"
   window.location.href = "#j"
   document.getElementById('jumpaudio').play()
   setTimeout(function () { document.getElementById('jumpscare').style.display = "none"; window.location.href= "#top" }, 3000)
+})
+
+socket.on("jumpscareNice", function() {
+  document.getElementById('jumpscare').src = "https://cdn.glitch.global/d7ca64b9-401f-403a-bf38-6a2d5013aacd/nicejuan.png?v=1730210373981"
+  document.getElementById('jumpscare').style.display = "block"
+  window.location.href = "#j"
+  document.getElementById('jumpNiceaudio').play()
+  setTimeout(function () { document.getElementById('jumpscare').style.display = "none"; window.location.href= "#top" }, 10000)
+})
+
+1
+
+document.getElementById('command_jumpscare').addEventListener('contextmenu', function() {
+  jumpscareNice();
+  return false;
+});
+
+socket.on("connectmsgToggleMsg", function(lock) {
+  var item = document.createElement("li");
+  item.style.color = "white";
+  item.textContent = `${lock[0]} has made connect/disconnect messages ${lock[1]}.`;
+  messages.appendChild(item);
+  window.scrollTo(0, document.body.scrollHeight);
+})
+
+socket.on("developSend", function() {
+  window.location.replace("https://agentsyaproom.glitch.me/development.html")
+})
+
+socket.on("bannedwordMsg", function() {
+  alert('Your message contains a censored word, remove it and your message will be sent.')
+})
+
+socket.on("messagetoLong", function(char) {
+  alert(`Your message is too long, it needs to be ${char} characters less (including spaces).`)
+})
+
+socket.on('universeReset', function() {
+  let elements = document.getElementsByClassName('message');
+  while(elements.length > 0) {
+      elements[0].parentNode.removeChild(elements[0]);
+  }
 })
 
 document.getElementById("image").addEventListener("click", function () {

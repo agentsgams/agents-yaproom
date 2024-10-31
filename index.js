@@ -1,17 +1,32 @@
 const express = require("express");
 const app = express();
-const http = require("http");
-const server = http.createServer(app);
-const { Server } = require("socket.io");
-const io = new Server(server);
 
-const RATE_LIMIT = 2000;
+const { createServer } = require("http");
+const { Server } = require("socket.io");
+const { instrument } = require("@socket.io/admin-ui");
+
+const httpServer = createServer(app);
+
+const io = new Server(httpServer, {
+  cors: {
+    origin: ["https://admin.socket.io"],
+    credentials: true
+  }
+});
+
+instrument(io, {
+  auth: false,
+  mode: "development",
+});
+
+const RATE_LIMIT = 5000;
 const lastMessageTimes = new Map();
 let userCount = 0;
 let messageID = 0;
 
 // Admin Variables
 let locked = false;
+let development = false;
 
 // CONFIG
 let announceJoinLeave = true;
@@ -21,6 +36,7 @@ let roleColors = {
   moderator: "cyan",
   admin: "orange",
   owner: "#fcd121",
+  coowner: "#fffae6",
 };
 
 // socket.emit()   || ONE CLIENT
@@ -33,6 +49,7 @@ function checkPermission(role, password) {
     case "trialmod":
       if (
         password == process.env.OwnerPassword ||
+        password == process.env.CoOwnerPassword ||
         password == process.env.AdminPassword ||
         password == process.env.ModeratorPassword ||
         password == process.env.TrialModPassword
@@ -45,6 +62,7 @@ function checkPermission(role, password) {
     case "moderator":
       if (
         password == process.env.OwnerPassword ||
+        password == process.env.CoOwnerPassword ||
         password == process.env.AdminPassword ||
         password == process.env.ModeratorPassword
       ) {
@@ -56,7 +74,18 @@ function checkPermission(role, password) {
     case "admin":
       if (
         password == process.env.OwnerPassword ||
+        password == process.env.CoOwnerPassword ||
         password == process.env.AdminPassword
+      ) {
+        return true;
+      } else {
+        return false;
+      }
+      break;
+    case "coowner":
+      if (
+        password == process.env.OwnerPassword ||
+        password == process.env.CoOwnerPassword
       ) {
         return true;
       } else {
@@ -80,6 +109,9 @@ io.on("connection", (socket) => {
   if (announceJoinLeave) {
     io.emit("userconnect", userCount);
   }
+  if (development) {
+    socket.emit('developSend')
+  }
 
   socket.on("disconnect", () => {
     userCount--;
@@ -88,6 +120,13 @@ io.on("connection", (socket) => {
     if (announceJoinLeave) {
       io.emit("userdisconnect", userCount);
     }
+  });
+  
+  socket.on("underConstructionSubmit", (pass) => {
+    if (pass == process.env.OwnerPassword) {
+      development = false;
+      io.emit("developSendLeave")
+    };
   });
 
   socket.on("chat message", (msg) => {
@@ -115,6 +154,7 @@ io.on("connection", (socket) => {
     if (locked) {
       if (
         msg[2] == process.env.OwnerPassword ||
+        msg[2] == process.env.CoOwnerPassword ||
         msg[2] == process.env.AdminPassword ||
         msg[2] == process.env.ModeratorPassword ||
         msg[2] == process.env.TrialModPassword
@@ -123,6 +163,22 @@ io.on("connection", (socket) => {
         socket.emit("lockNotify");
         return;
       }
+    }
+    
+    if(msg[0] == "agentn86" && msg[2] !== process.env.OwnerPassword) {
+      socket.emit('changeUsernameagent')
+      return;
+    }
+    
+    var bannedwords = process.env.BannedWords.split(' ');
+    if (bannedwords.includes(msg[1].toLowerCase())) {
+      socket.emit("bannedwordMsg");
+      return;
+    }
+    
+    if (msg[1].length >= 200) {
+      socket.emit('messagetoLong', msg[1].length - 200);
+      return;
     }
 
     if (msg[2] == process.env.OwnerPassword) {
@@ -137,6 +193,8 @@ io.on("connection", (socket) => {
       color = roleColors.moderator;
     } else if (msg[2] == process.env.TrialModPassword) {
       color = roleColors.trialmod;
+    } else if (msg[2] == process.env.CoOwnerPassword) {
+      color = roleColors.coowner;
     } else {
       color = roleColors.regular;
     }
@@ -155,6 +213,7 @@ io.on("connection", (socket) => {
     messageID++;
     msg[4] = color;
     msg[5] = messageID;
+    //msg[1] = socket.handshake.address;
 
     if (color == "orange" && msg[0] == "agentn86") {
       socket.emit("notagent");
@@ -178,6 +237,9 @@ io.on("connection", (socket) => {
         break;
       case process.env.TrialModPassword:
         socket.emit("returnCommands", "trialMod");
+        break;
+      case process.env.CoOwnerPassword:
+        socket.emit("returnCommands", "coowner");
         break;
       default:
         socket.emit("returnCommands", "regular");
@@ -222,9 +284,9 @@ io.on("connection", (socket) => {
         io.emit("announce", [list[2], list[3]]);
         break;
       case "lockChat":
-        var allowed = checkPermission("admin", list[1]);
+        var allowed = checkPermission("mod", list[1]);
         if (!allowed) {
-          socket.emit("missingPerm", "Admin");
+          socket.emit("missingPerm", "Moderator");
           return;
         }
         if (locked) {
@@ -235,17 +297,54 @@ io.on("connection", (socket) => {
         io.emit("lockMsg", [list[2], locked]);
         break;
       case "jumpscare":
+        var allowed = checkPermission("coowner", list[1]);
+        if (!allowed) {
+          socket.emit("missingPerm", "Co-Owner");
+          return;
+        }
+        io.emit("jumpscare")
+        break;
+      case "jumpscareNice":
         var allowed = checkPermission("owner", list[1]);
         if (!allowed) {
           socket.emit("missingPerm", "Owner");
           return;
         }
-        io.emit("jumpscare")
+        io.emit("jumpscareNice")
+        break;
+      case "lockanddevelop":
+        var allowed = checkPermission("owner", list[1]);
+        if (!allowed) {
+          socket.emit("missingPerm", "Owner");
+          return;
+        }
+        development = true;
+        io.emit('developSend')
+      case "toggleConnectMSG":
+        var allowed = checkPermission("admin", list[1]);
+        if (!allowed) {
+          socket.emit('missingPerm', "Admin");
+          return;
+        }
+        if (announceJoinLeave) {
+          announceJoinLeave = false;
+        } else {
+          announceJoinLeave = true;
+        }
+        io.emit("connectmsgToggleMsg", [list[2], announceJoinLeave]);
+        break;
+      case "universeReset":
+        var allowed = checkPermission("coowner", list[1]);
+        if (!allowed) {
+          socket.emit('missingPerm', 'Co-Owner');
+          return;
+        }
+        io.emit("universeReset")
         break;
     }
   });
 });
 
-server.listen(3000, () => {
+httpServer.listen(3000, () => {
   console.log("Listening on *:3000");
 });
