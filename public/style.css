@@ -1,0 +1,117 @@
+@font-face {
+  font-family: code;
+  src: url("https://cdn.glitch.global/d7ca64b9-401f-403a-bf38-6a2d5013aacd/font.ttf?v=1728607702992");
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding-bottom: 3rem;
+  font-family: code;
+  background-color: black;
+  color: green;
+}
+
+.commandsBTN:hover {
+  transform: scale(1.05);
+}
+.commandsBTN:active {
+  transform: scale(0.95);
+}
+
+#form {
+  background: rgba(0, 0, 0, 0.15);
+  padding: 0.25rem;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  height: 3rem;
+  box-sizing: border-box;
+  backdrop-filter: blur(10px);
+}
+#input {
+  background-color: #2e2e2e;
+  color: white;
+  font: code;
+  border: none;
+  padding: 0 1rem;
+  flex-grow: 1;
+  border-radius: 2rem;
+  margin: 0.25rem;
+}
+#input:focus {
+  outline: none;
+}
+#username {
+  background-color: #2e2e2e;
+  color: white;
+  font: code;
+  border: none;
+  padding: 0 1rem;
+  flex-grow: 1;
+  border-radius: 2rem;
+  margin: 0.25rem;
+}
+#username:focus {
+  outline: none;
+}
+button {
+  background: #333;
+  border: none;
+  padding: 0 1rem;
+  margin: 0.25rem;
+  border-radius: 3px;
+  outline: none;
+  color: #fff;
+  display: flex; /* Add this */
+  align-items: center; /* Add this */
+  justify-content: center;
+  cursor: pointer;
+}
+button:hover {
+  background: #393939;
+}
+button:disabled {
+  background: #393939;
+  color: gray;
+  cursor: not-allowed;
+}
+#messages {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  max-width: 100%; /* Ensure it doesn't overflow */
+  overflow-wrap: break-word; /* Allow words to break and wrap */
+  word-wrap: break-word; /* Older browsers support */
+  white-space: normal; /* Ensure normal white-space handling */
+}
+#messages > li {
+  padding: 0.5rem 1rem;
+}
+#messages > li:nth-child(odd) {
+  background: #171717;
+}
+
+.fade-in {
+  opacity: 0;
+  transition: opacity 0.1s ease-in;
+}
+
+.fade-in.show {
+  opacity: 1;
+}
+
+.fade-out {
+  color: red;
+  opacity: 1;
+  transition: opacity 0.2s ease-out;
+}
+
+.fade-out.hide {
+  opacity: 0;
+}

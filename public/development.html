@@ -1,0 +1,96 @@
+<html>
+  <head>
+    <title>agents yaproom construction</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      @font-face {
+        font-family: code;
+        src: url("https://cdn.glitch.global/d7ca64b9-401f-403a-bf38-6a2d5013aacd/font.ttf?v=1728607702992");
+      }
+
+      body {
+        font-family: code;
+        background-color: black;
+      }
+
+      .wrapper {
+        position: relative;
+      }
+
+      .mainDiv {
+        z-index: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <br />
+    <div class="wrapper" style="color: white">
+      <div
+        style="
+          max-width: 350px;
+          margin: 10px;
+          margin-top: 260px;
+          position: aboslute;
+          float: left;
+          padding: 10px;
+        "
+        class="mainDiv"
+      >
+        <h2 id="heading"></h2>
+        <p>
+          <b>agents yaproom</b> is currently in development or undergoing
+          publishing an update. The owner password is required to open it again.
+        </p>
+        <p>
+          While you wait, you can go to
+          <a
+            href="https://agentsgams.github.io/"
+            target="_blank"
+            style="color: white"
+            >agents hub</a
+          >
+          for more services, like games and movies.
+        </p>
+        <input
+          id="ownerpass"
+          placeholder="Enter owner password here..."
+          type="password"
+        /><button style="cursor: pointer" id="submit">Submit</button>
+      </div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      var socket = io();
+
+      document.getElementById("submit").addEventListener("click", function () {
+        var password = document.getElementById("ownerpass").value;
+        document.getElementById("submit").disabled = true;
+        socket.emit("underConstructionSubmit", password);
+      });
+
+      socket.on("developSendLeave", function () {
+        window.location.replace("https://agentsyaproom.glitch.me/");
+      });
+
+      var headings = [
+        "Under Construction",
+        "Update on the way!",
+        "Update Lockdown",
+      ];
+      var header = headings[Math.floor(Math.random() * headings.length)];
+      document.getElementById("heading").innerText = header;
+
+      var images = [
+        "https://cdn.glitch.global/d7ca64b9-401f-403a-bf38-6a2d5013aacd/background01.jpg?v=1730299775728",
+        "https://cdn.glitch.global/d7ca64b9-401f-403a-bf38-6a2d5013aacd/background02.jpg?v=1730300050916",
+        "https://cdn.glitch.global/d7ca64b9-401f-403a-bf38-6a2d5013aacd/background03.jpg?v=1730300225767",
+        "https://cdn.glitch.global/d7ca64b9-401f-403a-bf38-6a2d5013aacd/background04.jpg?v=1730300229291",
+        "https://cdn.glitch.global/d7ca64b9-401f-403a-bf38-6a2d5013aacd/background05.jpg?v=1730300231587",
+      ];
+      document.body.style.backgroundImage = `url('${
+        images[Math.floor(Math.random() * images.length)]
+      }')`;
+    </script>
+  </body>
+</html>

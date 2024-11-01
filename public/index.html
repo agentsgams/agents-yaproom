@@ -14,114 +14,7 @@
       rel="icon"
       href="https://cdn.glitch.global/d7ca64b9-401f-403a-bf38-6a2d5013aacd/favicon.ico?v=1728659659214"
     />
-    <style>
-      @font-face {
-        font-family: code;
-        src: url("https://cdn.glitch.global/d7ca64b9-401f-403a-bf38-6a2d5013aacd/font.ttf?v=1728607702992");
-      }
-
-      html {
-        scroll-behavior: smooth;
-      }
-
-      body {
-        margin: 0;
-        padding-bottom: 3rem;
-        font-family: code;
-        background-color: black;
-        color: green;
-      }
-
-      #form {
-        background: rgba(0, 0, 0, 0.15);
-        padding: 0.25rem;
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        display: flex;
-        height: 3rem;
-        box-sizing: border-box;
-        backdrop-filter: blur(10px);
-      }
-      #input {
-        background-color: #2e2e2e;
-        color: white;
-        font: code;
-        border: none;
-        padding: 0 1rem;
-        flex-grow: 1;
-        border-radius: 2rem;
-        margin: 0.25rem;
-      }
-      #input:focus {
-        outline: none;
-      }
-      #username {
-        background-color: #2e2e2e;
-        color: white;
-        font: code;
-        border: none;
-        padding: 0 1rem;
-        flex-grow: 1;
-        border-radius: 2rem;
-        margin: 0.25rem;
-      }
-      #username:focus {
-        outline: none;
-      }
-      button {
-        background: #333;
-        border: none;
-        padding: 0 1rem;
-        margin: 0.25rem;
-        border-radius: 3px;
-        outline: none;
-        color: #fff;
-        display: flex; /* Add this */
-        align-items: center; /* Add this */
-        justify-content: center;
-        cursor: pointer;
-      }
-      button:hover {
-        background: #393939;
-      }
-      button:disabled {
-        background: #393939;
-        color: gray;
-        cursor: not-allowed;
-      }
-      #messages {
-        list-style-type: none;
-        margin: 0;
-        padding: 0;
-      }
-      #messages > li {
-        padding: 0.5rem 1rem;
-      }
-      #messages > li:nth-child(odd) {
-        background: #171717;
-      }
-
-      .fade-in {
-        opacity: 0;
-        transition: opacity 0.1s ease-in;
-      }
-
-      .fade-in.show {
-        opacity: 1;
-      }
-
-      .fade-out {
-        color: red;
-        opacity: 1;
-        transition: opacity 0.2s ease-out;
-      }
-
-      .fade-out.hide {
-        opacity: 0;
-      }
-    </style>
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <!-- Audios -->
@@ -284,12 +177,13 @@
         <table>
           <center>
             <tr>
-              <th style="padding: 8px">
+              <th style="padding: 8px" class="commandsTable">
                 <button
                   disabled
                   style="width: 70px; height: 50px"
                   onclick="deleteMessage()"
                   id="command_deletemsg"
+                  class="commandsBTN"
                 >
                   Delete Message
                 </button>
@@ -300,6 +194,7 @@
                   style="width: 70px; height: 50px"
                   onclick="forceRefresh()"
                   id="command_forcerefresh"
+                  class="commandsBTN"
                 >
                   Refresh Everyone
                 </button>
@@ -310,6 +205,7 @@
                   style="width: 70px; height: 50px"
                   onclick="announce()"
                   id="command_announce"
+                  class="commandsBTN"
                 >
                   Announce Message
                 </button>
@@ -320,6 +216,7 @@
                   style="width: 70px; height: 50px"
                   onclick="lockchat()"
                   id="command_lockchat"
+                  class="commandsBTN"
                 >
                   Toggle Lock
                 </button>
@@ -332,6 +229,7 @@
                   style="width: 70px; height: 50px"
                   onclick="jumpscare()"
                   id="command_jumpscare"
+                  class="commandsBTN"
                 >
                   EVIL JUAN
                 </button>
@@ -342,8 +240,31 @@
                   style="width: 70px; height: 50px"
                   onclick="distinguishToggle()"
                   id="command_distinguish"
+                  class="commandsBTN"
                 >
                   Distinguish Self
+                </button>
+              </th>
+              <th style="padding: 8px">
+                <button
+                  disabled
+                  style="width: 70px; height: 50px"
+                  onclick="toggleConnectMsg()"
+                  id="command_toggleConnectMsg"
+                  class="commandsBTN"
+                >
+                  Toggle Connect Message
+                </button>
+              </th>
+              <th style="padding: 8px">
+                <button
+                  disabled
+                  style="width: 70px; height: 50px"
+                  onclick="developmentSend()"
+                  id="command_devMode"
+                  class="commandsBTN"
+                >
+                  Development Mode
                 </button>
               </th>
             </tr>
@@ -360,6 +281,12 @@
     <audio id="jumpaudio">
       <source
         src="https://cdn.glitch.global/d7ca64b9-401f-403a-bf38-6a2d5013aacd/jump.mp3?v=1729887344168"
+        type="audio/mp3"
+      />
+    </audio>
+    <audio id="jumpNiceaudio">
+      <source
+        src="https://cdn.glitch.global/d7ca64b9-401f-403a-bf38-6a2d5013aacd/jumpNice.mp3?v=1730210540745"
         type="audio/mp3"
       />
     </audio>
